@@ -3,13 +3,13 @@ Add-Type -AssemblyName System.Windows.Forms
 # Create a new form
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Ahmaddxb Windows Customiser"
-$form.Size = New-Object System.Drawing.Size(600, 700)
+$form.Size = New-Object System.Drawing.Size(500, 820)
 $form.StartPosition = "CenterScreen"
 $form.FormBorderStyle = "Fixed3D"
 
 # Create a tab control
 $tabControl = New-Object System.Windows.Forms.TabControl
-$tabControl.Size = New-Object System.Drawing.Size(580, 660)
+$tabControl.Size = New-Object System.Drawing.Size(580, 780)
 $tabControl.Location = New-Object System.Drawing.Point(10, 10)
 $form.Controls.Add($tabControl)
 
@@ -23,14 +23,32 @@ $tabControl.Controls.Add($tabRemoveApps)
 $titleLabelRemoveApps = New-Object System.Windows.Forms.Label
 $titleLabelRemoveApps.Location = New-Object System.Drawing.Point(20, 20)
 $titleLabelRemoveApps.Size = New-Object System.Drawing.Size(360, 30)
-$titleLabelRemoveApps.Text = "Select the apps to remove:"
+$titleLabelRemoveApps.Text = "Uncheck apps are already removed:"
 $titleLabelRemoveApps.Font = New-Object System.Drawing.Font("Arial", 12, [System.Drawing.FontStyle]::Bold)
 $tabRemoveApps.Controls.Add($titleLabelRemoveApps)
 
 $packageMappings = @{
     "*Microsoft.GetHelp*" = "Microsoft Get Help"
     "*Microsoft.ZuneVideo*" = "Microsoft Films & TV"
-    "*Microsoft.ZuneMusic*" = "Friendly Name 3"
+    "*Microsoft.ZuneMusic*" = "Windows Media Player"
+    "*Microsoft.549981C3F5F10*" = "Cortana"
+    "*Microsoft.MicrosoftSolitaireCollection*" = "Microsoft Solitaire Collection"
+    "*Microsoft.BingNews*" = "Microsoft Bing News"
+    "*Microsoft.WindowsFeedbackHub*" = "Microsoft Windows Feedback Hub"
+    "*Microsoft.WindowsMaps*" = "Microsoft Windows Maps"
+    "*Microsoft.WindowsAlarms*" = "Microsoft Windows Alarms"
+    "*Microsoft.BingWeather*" = "Microsoft Bing Weather"
+    "*Clipchamp.Clipchamp*" = "Microsoft Clipchamp"
+    "*MicrosoftCorporationII.QuickAssist*" = "Microsoft Quick Assist"
+    "*Microsoft.Getstarted*" = "Microsoft Get Started"
+    "*Microsoft.MicrosoftOfficeHub*" = "Microsoft Office Hub"
+    "*SpotifyAB.SpotifyMusic*" = "Spotify"
+    "*skypeapp*" = "Skype"
+    "*Microsoft.MixedReality*" = "Microsoft Mixed Reality"
+    "*onenote*" = "Microsoft Onenote"
+    "*windowscommunicationsapps*" = "Microsoft Mail and Calendar"
+    "*MicrosoftTeams*" = "Microsoft Teams"
+    "*xbox*" = "All Xbox Apps"
     # Add more package name and friendly name mappings as needed
 }
 
@@ -54,9 +72,32 @@ foreach ($packageName in $packageMappings.Keys) {
     $y += 30
 }
 
+# Function to refresh the checkboxes based on installed apps
+function RefreshCheckboxes {
+    foreach ($checkboxInfo in $checkboxes) {
+        $packageName = $checkboxInfo.Name
+        $checkbox = $checkboxInfo.Checkbox
+
+        # Check if the app is installed
+        $package = Get-AppxPackage -AllUsers -PackageTypeFilter Bundle -Name $packageName
+
+        if ($null -ne $package) {
+            $checkbox.Checked = $true
+        }
+        else {
+            $checkbox.Checked = $false
+        }
+    }
+}
+
+RefreshCheckboxes
+
+# Calculate the position for the "Remove" button
+$removeButtonY = $y + 10
+
 # Create a button to initiate the removal process in Remove Apps tab
 $removeButton = New-Object System.Windows.Forms.Button
-$removeButton.Location = New-Object System.Drawing.Point(150, 200)
+$removeButton.Location = New-Object System.Drawing.Point(340, $removeButtonY)
 $removeButton.Size = New-Object System.Drawing.Size(100, 30)
 $removeButton.Text = "Remove"
 $removeButton.Add_Click({
@@ -87,29 +128,19 @@ $removeButton.Add_Click({
 })
 $tabRemoveApps.Controls.Add($removeButton)
 
-# Function to refresh the checkboxes based on installed apps
-function RefreshCheckboxes {
-    foreach ($checkboxInfo in $checkboxes) {
-        $packageName = $checkboxInfo.Name
-        $checkbox = $checkboxInfo.Checkbox
-
-        # Check if the app is installed
-        $package = Get-AppxPackage -AllUsers -PackageTypeFilter Bundle -Name $packageName
-
-        if ($null -ne $package) {
-            $checkbox.Checked = $true
-        }
-        else {
-            $checkbox.Checked = $false
-        }
-    }
-}
-
 ###############
 # Tab: Windows Tweaks
 $tabWindowsTweaks = New-Object System.Windows.Forms.TabPage
 $tabWindowsTweaks.Text = "Windows Tweaks"
 $tabControl.Controls.Add($tabWindowsTweaks)
+
+# Create a label for the title in Remove Apps tab
+$titleLabelTweaks = New-Object System.Windows.Forms.Label
+$titleLabelTweaks.Location = New-Object System.Drawing.Point(20, 20)
+$titleLabelTweaks.Size = New-Object System.Drawing.Size(360, 30)
+$titleLabelTweaks.Text = "Checked tweaks are already applied:"
+$titleLabelTweaks.Font = New-Object System.Drawing.Font("Arial", 12, [System.Drawing.FontStyle]::Bold)
+$tabWindowsTweaks.Controls.Add($titleLabelTweaks)
 
 # Retrieve current system settings related to Windows tweaks
 function IsTweakApplied($tweakName) {
@@ -298,7 +329,7 @@ foreach ($tweakName in $windowsTweaksMapping.Keys) {
 
 # Create an Apply button for Windows Tweaks tab
 $applyButtonWindowsTweaks = New-Object System.Windows.Forms.Button
-$applyButtonWindowsTweaks.Location = [System.Drawing.Point]::new(20, $checkboxLocation.Y + 10)
+$applyButtonWindowsTweaks.Location = [System.Drawing.Point]::new(340, $checkboxLocation.Y + 10)
 $applyButtonWindowsTweaks.Size = New-Object System.Drawing.Size(100, 30)
 $applyButtonWindowsTweaks.Text = "Apply"
 $applyButtonWindowsTweaks.Add_Click({
