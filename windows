@@ -23,7 +23,7 @@ $tabControl.Controls.Add($tabRemoveApps)
 $titleLabelRemoveApps = New-Object System.Windows.Forms.Label
 $titleLabelRemoveApps.Location = New-Object System.Drawing.Point(20, 20)
 $titleLabelRemoveApps.Size = New-Object System.Drawing.Size(360, 30)
-$titleLabelRemoveApps.Text = "Uncheck apps are already removed:"
+$titleLabelRemoveApps.Text = "Check apps are present on the system:"
 $titleLabelRemoveApps.Font = New-Object System.Drawing.Font("Arial", 12, [System.Drawing.FontStyle]::Bold)
 $tabRemoveApps.Controls.Add($titleLabelRemoveApps)
 
@@ -73,7 +73,7 @@ foreach ($packageName in $packageMappings.Keys) {
 }
 
 # Function to refresh the checkboxes based on installed apps
-function RefreshCheckboxes {
+function RefreshCheckboxesRemoveApp {
     foreach ($checkboxInfo in $checkboxes) {
         $packageName = $checkboxInfo.Name
         $checkbox = $checkboxInfo.Checkbox
@@ -90,7 +90,7 @@ function RefreshCheckboxes {
     }
 }
 
-RefreshCheckboxes
+RefreshCheckboxesRemoveApp
 
 # Calculate the position for the "Remove" button
 $removeButtonY = $y + 10
@@ -114,19 +114,32 @@ $removeButton.Add_Click({
             if ($null -ne $package) {
                 # Remove the app
                 Write-Host "Removing the $friendlyName app..."
-                Remove-AppxPackage -Package $package.PackageFullName -AllUsers
+                $package.PackageFullName | ForEach-Object {
+                    Remove-AppxPackage -Package $_ -AllUsers
+                }
                 Write-Host "The $friendlyName app has been removed."
-
-                # Refresh the checkboxes
-                RefreshCheckboxes
             }
             else {
                 Write-Host "The $friendlyName app is not installed."
             }
         }
     }
+
+    # Refresh the checkboxes
+    RefreshCheckboxesRemoveApp
+
 })
 $tabRemoveApps.Controls.Add($removeButton)
+
+# Create a button to refresh the checkboxes
+$refreshButton = New-Object System.Windows.Forms.Button
+$refreshButton.Location = New-Object System.Drawing.Point(220, $removeButtonY)
+$refreshButton.Size = New-Object System.Drawing.Size(100, 30)
+$refreshButton.Text = "Refresh"
+$refreshButton.Add_Click({
+    RefreshCheckboxesRemoveApp
+})
+$tabRemoveApps.Controls.Add($refreshButton)
 
 ###############
 # Tab: Windows Tweaks
@@ -138,7 +151,7 @@ $tabControl.Controls.Add($tabWindowsTweaks)
 $titleLabelTweaks = New-Object System.Windows.Forms.Label
 $titleLabelTweaks.Location = New-Object System.Drawing.Point(20, 20)
 $titleLabelTweaks.Size = New-Object System.Drawing.Size(360, 30)
-$titleLabelTweaks.Text = "Checked tweaks are already applied:"
+$titleLabelTweaks.Text = "Checked tweaks are not applied:"
 $titleLabelTweaks.Font = New-Object System.Drawing.Font("Arial", 12, [System.Drawing.FontStyle]::Bold)
 $tabWindowsTweaks.Controls.Add($titleLabelTweaks)
 
@@ -148,79 +161,79 @@ function IsTweakApplied($tweakName) {
         "Enable Dark Mode" {
             $appsUseLightTheme = Get-ItemPropertyValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -ErrorAction SilentlyContinue
             $systemUsesLightTheme = Get-ItemPropertyValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -ErrorAction SilentlyContinue
-            return ($appsUseLightTheme -eq 0) -and ($systemUsesLightTheme -eq 0)
+            return ($appsUseLightTheme -ne 0) -and ($systemUsesLightTheme -ne 0)
         }
         "Open File Explorer to This PC" {
             $registryValue = Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "LaunchTo" -ErrorAction SilentlyContinue
-            return ($registryValue -eq 1)
+            return ($registryValue -ne 1)
         }
         "File Explorer Show File Extentions" {
             $registryValue = Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideFileExt" -ErrorAction SilentlyContinue
-            return ($registryValue -eq 0)
+            return ($registryValue -ne 0)
         }
         "File Explorer show hidden files" {
             $registryValue = Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Hidden" -ErrorAction SilentlyContinue
-            return ($registryValue -eq 1)
+            return ($registryValue -ne 1)
         }
         "Hide Widget on Task Bar" {
             $registryValue = Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarDa" -ErrorAction SilentlyContinue
-            return ($registryValue -eq 0)
+            return ($registryValue -ne 0)
         }
         "Set desktop icon size to small" {
             $iconSizeValue = Get-ItemPropertyValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\Shell\Bags\1\Desktop" -Name "IconSize" -ErrorAction SilentlyContinue
             $modeValue = Get-ItemPropertyValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\Shell\Bags\1\Desktop" -Name "Mode" -ErrorAction SilentlyContinue
             $logicalViewModeValue = Get-ItemPropertyValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\Shell\Bags\1\Desktop" -Name "LogicalViewMode" -ErrorAction SilentlyContinue
-            return ($iconSizeValue -eq 32) -and ($modeValue -eq 1) -and ($logicalViewModeValue -eq 3)
+            return ($iconSizeValue -ne 32) -and ($modeValue -ne 1) -and ($logicalViewModeValue -ne 3)
         }
         "windows 11 task bar to hide search" {
             $registryValue = Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "SearchboxTaskbarMode" -ErrorAction SilentlyContinue
-            return ($registryValue -eq 0)
+            return ($registryValue -ne 0)
         }
         "Hide Chat on Task Bar" {
             $registryValue = Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarMn" -ErrorAction SilentlyContinue
-            return ($registryValue -eq 0)
+            return ($registryValue -ne 0)
         }
         "disable search web results on Windows 11" {
             $registryValue = Get-ItemPropertyValue -Path "HKCU:\Software\Policies\Microsoft\Windows\Explorer" -Name "DisableSearchBoxSuggestions" -ErrorAction SilentlyContinue
-            return ($registryValue -eq 1)
+            return ($registryValue -ne 1)
         }
         "Show This PC on desktop" {
             $registryValue = Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Name "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" -ErrorAction SilentlyContinue
-            return ($registryValue -eq 0)
+            return ($registryValue -ne 0)
         }
         "Turn on Use Print Screen Key to Open Screen Snipping" {
             $registryValue = Get-ItemPropertyValue -Path "HKCU:\Control Panel\Keyboard" -Name "PrintScreenKeyForSnippingEnabled" -ErrorAction SilentlyContinue
-            return ($registryValue -eq 1)
+            return ($registryValue -ne 1)
         }
         "Turn On Set Time Zone Automatically" {
             $registryValue = Get-ItemPropertyValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\tzautoupdate" -Name "Start" -ErrorAction SilentlyContinue
-            return ($registryValue -eq 3)
+            return ($registryValue -ne 3)
         }
         "Change Time Format" {
             $sShortTime = Get-ItemPropertyValue -Path "HKCU:\Control Panel\International" -Name "sShortTime" -ErrorAction SilentlyContinue
             $sTimeFormat = Get-ItemPropertyValue -Path "HKCU:\Control Panel\International" -Name "sTimeFormat" -ErrorAction SilentlyContinue
-            return ($sShortTime -eq "h:mm tt") -and ($sTimeFormat -eq "h:mm:ss tt")
+            return ($sShortTime -ne "h:mm tt") -and ($sTimeFormat -ne "h:mm:ss tt")
         }
         "Turn off Automatic Proxy Configuration" {
             $ProxyEnable = Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "ProxyEnable" -ErrorAction SilentlyContinue
             $AutoDetect = Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "AutoDetect" -ErrorAction SilentlyContinue
-            return ($ProxyEnable -eq 0) -and ($AutoDetect -eq 0)
+            return ($ProxyEnable -ne 0) -and ($AutoDetect -ne 0)
         }
         "Change UAC Behavior for Administrators to Elevate without prompting" {
             $registryValue = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "ConsentPromptBehaviorAdmin" -ErrorAction SilentlyContinue
-            return ($registryValue -eq 0)
+            return ($registryValue -ne 0)
         }
         "Turn On Receive Updates for Other Microsoft Products" {
             $registryValue = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings" -Name "IsExpedited" -ErrorAction SilentlyContinue
-            return ($registryValue -eq 1)
+            return ($registryValue -ne 1)
         }
         "Turn On Get me up to date for Windows Update" {
             $registryValue = (New-Object -ComObject "Microsoft.Update.AutoUpdate").Settings.IncludeRecommendedUpdates
-            return ($registryValue -eq "True")
+            return ($registryValue -ne "True")
         }
         "Turn On Auto-restart Notifications for Windows Update in Settings" {
             $registryValue = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings" -Name "RestartNotificationsAllowed2" -ErrorAction SilentlyContinue
-            return ($registryValue -eq 1)
+            return ($registryValue -ne 1)
         }
         # Add more tweak checks here...
         default {
@@ -231,7 +244,7 @@ function IsTweakApplied($tweakName) {
 }
 
 # Function to refresh the checkboxes based on the current system settings
-function RefreshCheckboxes {
+function RefreshCheckboxesTweaks {
     foreach ($checkbox in $checkboxesWindowsTweaks) {
         $tweakName = $checkbox.Text
         $checkbox.Checked = IsTweakApplied($tweakName)
@@ -350,7 +363,7 @@ $applyButtonWindowsTweaks.Add_Click({
     Stop-Process -Name explorer
 
     # Refresh the checkboxes
-    RefreshCheckboxes
+    RefreshCheckboxesTweaks
 
 })
 
