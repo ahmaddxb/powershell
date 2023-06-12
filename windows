@@ -181,9 +181,10 @@ function IsTweakApplied($tweakName) {
         }
         "Set desktop icon size to small" {
             $iconSizeValue = Get-ItemPropertyValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\Shell\Bags\1\Desktop" -Name "IconSize" -ErrorAction SilentlyContinue
-            $modeValue = Get-ItemPropertyValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\Shell\Bags\1\Desktop" -Name "Mode" -ErrorAction SilentlyContinue
-            $logicalViewModeValue = Get-ItemPropertyValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\Shell\Bags\1\Desktop" -Name "LogicalViewMode" -ErrorAction SilentlyContinue
-            return ($iconSizeValue -ne 32) -and ($modeValue -ne 1) -and ($logicalViewModeValue -ne 3)
+            #$modeValue = Get-ItemPropertyValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\Shell\Bags\1\Desktop" -Name "Mode" -ErrorAction SilentlyContinue
+            #$logicalViewModeValue = Get-ItemPropertyValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\Shell\Bags\1\Desktop" -Name "LogicalViewMode" -ErrorAction SilentlyContinue
+            return ($iconSizeValue -ne 32)
+            #return ($iconSizeValue -ne 32) -and ($modeValue -ne 1) -and ($logicalViewModeValue -ne 3)
         }
         "windows 11 task bar to hide search" {
             $registryValue = Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "SearchboxTaskbarMode" -ErrorAction SilentlyContinue
@@ -228,8 +229,8 @@ function IsTweakApplied($tweakName) {
             return ($registryValue -ne 1)
         }
         "Turn On Get me up to date for Windows Update" {
-            $registryValue = (New-Object -ComObject "Microsoft.Update.AutoUpdate").Settings.IncludeRecommendedUpdates
-            return ($registryValue -ne "True")
+            $registryValue = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings" -Name "IsExpedited" -ErrorAction SilentlyContinue
+            return ($registryValue -ne 1)
         }
         "Turn On Auto-restart Notifications for Windows Update in Settings" {
             $registryValue = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings" -Name "RestartNotificationsAllowed2" -ErrorAction SilentlyContinue
@@ -242,7 +243,7 @@ function IsTweakApplied($tweakName) {
         # Add more tweak checks here...
         default {
             # If the tweak is not found in the mapping, return false
-            return $true
+            return $false
         }
     }
 }
@@ -279,10 +280,10 @@ $windowsTweaksMapping = @{
         Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\Shell\Bags\1\Desktop" -Name "LogicalViewMode" -Value 3 -Force
     }
     "windows 11 task bar to hide search" = {
-        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "SearchboxTaskbarMode" -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "SearchboxTaskbarMode" -Value 0 -Force
     }
     "Hide Chat on Task Bar" = {
-        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "TaskbarMn" -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarMn" -Value 0 -Force
     }
     "disable search web results on Windows 11" = {
         New-Item -Path "HKCU:\Software\Policies\Microsoft\Windows\Explorer" -Force
@@ -345,6 +346,28 @@ foreach ($tweakName in $windowsTweaksMapping.Keys) {
 
     $checkboxLocation.Y += 30
 }
+
+# Create a Refresh Checkboxes button
+$refreshButtonWindowsTweaks = New-Object System.Windows.Forms.Button
+$refreshButtonWindowsTweaks.Text = "Refresh"
+$refreshButtonWindowsTweaks.Location = [System.Drawing.Point]::new(220, $checkboxLocation.Y + 10)
+$refreshButtonWindowsTweaks.Size = New-Object System.Drawing.Size(100, 30)
+$refreshButtonWindowsTweaks.Add_Click({
+    RefreshCheckboxesTweaks
+})
+$tabWindowsTweaks.Controls.Add($refreshButtonWindowsTweaks)
+
+# Create a Clear Checks button
+$clearButtonWindowsTweaks = New-Object System.Windows.Forms.Button
+$clearButtonWindowsTweaks.Text = "Clear Checks"
+$clearButtonWindowsTweaks.Location = [System.Drawing.Point]::new(100, $checkboxLocation.Y + 10)
+$clearButtonWindowsTweaks.Size = New-Object System.Drawing.Size(100, 30)
+$clearButtonWindowsTweaks.Add_Click({
+    foreach ($checkbox in $checkboxesWindowsTweaks) {
+        $checkbox.Checked = $false
+    }
+})
+$tabWindowsTweaks.Controls.Add($clearButtonWindowsTweaks)
 
 # Create an Apply button for Windows Tweaks tab
 $applyButtonWindowsTweaks = New-Object System.Windows.Forms.Button
