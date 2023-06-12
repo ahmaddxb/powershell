@@ -215,8 +215,8 @@ function IsTweakApplied($tweakName) {
             return ($sShortTime -ne "h:mm tt") -and ($sTimeFormat -ne "h:mm:ss tt")
         }
         "Turn off Automatic Proxy Configuration" {
-            $ProxyEnable = Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "ProxyEnable" -ErrorAction SilentlyContinue
-            $AutoDetect = Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "AutoDetect" -ErrorAction SilentlyContinue
+            $ProxyEnable = Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "ProxyEnable"
+            $AutoDetect = Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "AutoDetect"
             return ($ProxyEnable -ne 0) -and ($AutoDetect -ne 0)
         }
         "Change UAC Behavior for Administrators to Elevate without prompting" {
