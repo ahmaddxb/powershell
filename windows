@@ -235,6 +235,10 @@ function IsTweakApplied($tweakName) {
             $registryValue = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings" -Name "RestartNotificationsAllowed2" -ErrorAction SilentlyContinue
             return ($registryValue -ne 1)
         }
+        "Get Latest Updates as soon as available in Windows 11" {
+            $registryValue = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings" -Name "IsContinuousInnovationOptedIn" -ErrorAction SilentlyContinue
+            return ($registryValue -ne 1)
+        }
         # Add more tweak checks here...
         default {
             # If the tweak is not found in the mapping, return false
@@ -315,7 +319,9 @@ $windowsTweaksMapping = @{
     "Turn On Auto-restart Notifications for Windows Update in Settings" = {
         New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings" -Name "RestartNotificationsAllowed2" -Value "1" -Force
     }
-
+    "Get Latest Updates as soon as available in Windows 11" = {
+        New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings" -Name "IsContinuousInnovationOptedIn" -Value "1" -Force
+    }
 
 
     # Add more Windows tweaks here...
