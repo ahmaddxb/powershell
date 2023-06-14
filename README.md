@@ -1,3 +1,3 @@
 # powershell
 
-iwr -useb https://raw.githubusercontent.com/ahmaddxb/powershell/main/windows | iex
+iwr -useb https://link.ahmaddxb.xyz/win | iex
