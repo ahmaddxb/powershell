@@ -3,15 +3,30 @@ Add-Type -AssemblyName System.Windows.Forms
 # Create a new form
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Ahmaddxb Windows Customiser"
-$form.Size = New-Object System.Drawing.Size(500, 820)
+$form.Size = New-Object System.Drawing.Size(500, 850)
 $form.StartPosition = "CenterScreen"
-$form.FormBorderStyle = "Fixed3D"
+$form.FormBorderStyle = "Sizable"
+
+# Create a new form
+$form = New-Object System.Windows.Forms.Form
+$form.Text = "Ahmaddxb Windows Customiser"
+$form.Size = New-Object System.Drawing.Size(500, 850)
+$form.StartPosition = "CenterScreen"
+$form.FormBorderStyle = "Sizable"
+
+# Create a panel for scrolling
+$scrollPanel = New-Object System.Windows.Forms.Panel
+$scrollPanel.Location = New-Object System.Drawing.Point(10, 10)
+$scrollPanel.Size = New-Object System.Drawing.Size(480, 830)
+$scrollPanel.AutoScroll = $true
+$form.Controls.Add($scrollPanel)
 
 # Create a tab control
 $tabControl = New-Object System.Windows.Forms.TabControl
-$tabControl.Size = New-Object System.Drawing.Size(580, 780)
+$tabControl.Size = New-Object System.Drawing.Size(455, 830)
 $tabControl.Location = New-Object System.Drawing.Point(10, 10)
-$form.Controls.Add($tabControl)
+$scrollPanel.Controls.Add($tabControl)
+#$form.Controls.Add($tabControl)
 
 ###############
 # Tab: Remove Apps
@@ -48,7 +63,8 @@ $packageMappings = @{
     "*onenote*" = "Microsoft Onenote"
     "*windowscommunicationsapps*" = "Microsoft Mail and Calendar"
     "*MicrosoftTeams*" = "Microsoft Teams"
-    "*xbox*" = "All Xbox Apps"
+    "*xbox*" = "All Other Xbox Apps"
+    "*Microsoft.GamingApp*" = "Xbox App"
     # Add more package name and friendly name mappings as needed
 }
 
